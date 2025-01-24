@@ -79,10 +79,10 @@ def spacedOut(word, guessed=[]):
 def end(winner=False):
     global limbs
     lostTxt = 'You Lost! Press any key to play again...'
-    winTxt = 'WINNER! Press any key to play again...'
+    winTxt = 'Winner! Play again ?'
     redraw_game_window()
     pygame.time.delay(1000)
-    win.fill(GREEN)
+    win.fill(WHITE)
 
     if winner:
         label = lost_font.render(winTxt, 1, BLACK)

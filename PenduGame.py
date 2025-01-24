@@ -35,14 +35,14 @@ def redraw_game_window():
     global hangmanPics
     global limbs
 
-    win.fill(GREEN)
+    win.fill(WHITE)
 
     # Display guessed word
     spaced = spacedOut(word, guessed)
     label1 = guess_font.render(spaced, 1, BLACK)
     rect = label1.get_rect()
     length = rect[2]
-    win.blit(label1, (winWidth / 2 - length / 2, 400))
+    win.blit(label1, (winWidth / 2 - length / 2, 100))
 
     # Display hangman image
     pic = hangmanPics[limbs]

@@ -104,63 +104,112 @@ def dessiner_pendu(erreurs):
     if erreurs>9:
         pygame.draw.line(screen, NOIR, (175,350),(160,370), 3)# jambe gauche
 
+def dessiner_bouton(surface, x,y,largeur,hauteur, texte, couleur, vol_couleur, police):
+    souris_pos= pygame.mouse.get_pos()
+    souris_tap= pygame.mouse.get_pressed()
+    bouton_rect= pygame.Rect(x, y, largeur, hauteur)
+    voler=bouton_rect.collidepoint(souris_pos)
 
-while en_cours:
-    screen.fill(BLANC)
+    couleur_actuelle=vol_couleur if voler else couleur
+    pygame.draw.rect(surface, couleur_actuelle, bouton_rect, border_radius=10)
 
-    
+    texte_surface=police.render(texte, True, BLANC)
+    texte_rect=texte_surface.get_rect(center=(x+largeur//2, y +hauteur//2))
+    surface.blit(texte_surface, texte_rect)
 
-    # Carré des lettres faux
-    erreurs_rect=pygame.draw.rect(screen, ROUGE, (375, 275, 300, 100), 2)  
-    erectX= erreurs_rect.left+10
-    erectY= erreurs_rect.top+10
+    if voler and souris_tap[0]:
+        return True
+    return False
 
-    # Affichage du lettres non correctes
+def menu():
+    global en_cours
 
-    for lettre in lettres_devinees:
-        if lettre in mot_choisi:
-            continue
-        lettre_surface=POLICE.render(lettre, True, ROUGE)
-        lettre_rect=lettre_surface.get_rect()
+    while en_cours:
+        screen.fill(BLANC)
 
-        if erectX +lettre_rect.width>erreurs_rect.right-10:
-            erectX=erreurs_rect.left+10
-            erectY+=lettre_rect.height+5
-        screen.blit(lettre_surface, (erectX, erectY))
-        erectX+=lettre_rect.width+5
-    
+        if dessiner_bouton(screen, 100, 200, 200, 100, "Lancer ", NOIR, BLEU, POLICE ):
+            boucle_principale()
+        
+        elif dessiner_bouton(screen, 350, 200, 300, 100, "Ajouter des mots", NOIR, BLEU, POLICE):
+            print("pas encore")
 
-    # Affichage du pendu
-    dessiner_pendu(erreurs)
+        
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                en_cours=False
 
-
+        pygame.display.flip()
 
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            en_cours = False
-        if event.type == pygame.KEYDOWN:
-            lettre = event.unicode.upper()
-            if lettre.isalpha() and lettre not in lettres_devinees:
-                lettres_devinees.add(lettre)
-                if lettre in mot_choisi:
-                    for i, char in enumerate(mot_choisi):
-                        if char == lettre:
-                            devine[i] = lettre
-                else:
-                    erreurs += 1
-    
-    # Affichage du mot deviné
-    texte = POLICE.render(" ".join(devine), True, BLEU)
-    screen.blit(texte, (LARGEUR // 2 - texte.get_width() // 2, 100))
 
-    if erreurs> erreurs_max:
-        end(False)
-    elif "_" not in devine:
-        end(True)
 
-    pygame.display.flip()
-    horloge.tick(100)
+def boucle_principale():
+    global en_cours
+    global erreurs
+
+    while en_cours:
+        screen.fill(BLANC)
+
+        
+
+        # Carré des lettres faux
+        erreurs_rect=pygame.draw.rect(screen, ROUGE, (375, 275, 300, 100), 2)  
+        erectX= erreurs_rect.left+10
+        erectY= erreurs_rect.top+10
+
+        # Affichage du lettres non correctes
+
+        for lettre in lettres_devinees:
+            if lettre in mot_choisi:
+                continue
+            lettre_surface=POLICE.render(lettre, True, ROUGE)
+            lettre_rect=lettre_surface.get_rect()
+
+            if erectX +lettre_rect.width>erreurs_rect.right-10:
+                erectX=erreurs_rect.left+10
+                erectY+=lettre_rect.height+5
+            screen.blit(lettre_surface, (erectX, erectY))
+            erectX+=lettre_rect.width+5
+        
+
+        # Affichage du pendu
+        dessiner_pendu(erreurs)
+
+        if dessiner_bouton(screen, LARGEUR/2, 400, 150, 100, "Quitter", NOIR, ROUGE, POLICE):
+            end(False)
+            pygame.time.delay(5000)
+            en_cours=False
+
+
+
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                en_cours = False
+            if event.type == pygame.KEYDOWN:
+                lettre = event.unicode.upper()
+                if lettre.isalpha() and lettre not in lettres_devinees:
+                    lettres_devinees.add(lettre)
+                    if lettre in mot_choisi:
+                        for i, char in enumerate(mot_choisi):
+                            if char == lettre:
+                                devine[i] = lettre
+                    else:
+                        erreurs += 1
+        
+        # Affichage du mot deviné
+        texte = POLICE.render(" ".join(devine), True, BLEU)
+        screen.blit(texte, (LARGEUR // 2 - texte.get_width() // 2, 100))
+
+        if erreurs> erreurs_max:
+            end(False)
+        elif "_" not in devine:
+            end(True)
+
+        pygame.display.flip()
+        horloge.tick(100)
+
+menu()
 
 pygame.quit()
 

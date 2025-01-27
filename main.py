@@ -41,10 +41,71 @@ if not os.path.exists(chemin_fichier):
 with open(chemin_fichier, "r") as f:
     mots = f.read().splitlines()
 
-# Choix d'un mot aléatoire
-mot_choisi = random.choice(mots).upper()
-devine = ["_"] * len(mot_choisi)
-lettres_devinees = set()
+
+
+
+def dessiner_bouton(surface, x,y,largeur,hauteur, texte, couleur, vol_couleur, police):
+    global events
+    souris_pos= pygame.mouse.get_pos()
+    bouton_rect= pygame.Rect(x, y, largeur, hauteur)
+    voler=bouton_rect.collidepoint(souris_pos)
+
+    couleur_actuelle=vol_couleur if voler else couleur
+    pygame.draw.rect(surface, couleur_actuelle, bouton_rect, border_radius=10)
+
+    texte_surface=police.render(texte, True, BLANC)
+    texte_rect=texte_surface.get_rect(center=(x+largeur//2, y +hauteur//2))
+    surface.blit(texte_surface, texte_rect)
+    if voler and pygame.mouse.get_pressed()[0]:
+        return True
+    return False
+
+
+
+def ajouter_mot():
+    ajout_en_cours = True
+    input_text = ""
+
+
+    while ajout_en_cours:
+        screen.fill(BLANC)
+        global events
+        events=pygame.event.get()
+
+        for event in events:
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        if dessiner_bouton(screen, LARGEUR/2, HAUTEUR/2, 200, 100, "Annuler", NOIR, ROUGE, POLICE):
+            menu()
+            return
+
+
+        texte = POLICE.render("Ajoutez un mot:", True, NOIR)
+        screen.blit(texte, (LARGEUR // 2 - texte.get_width() // 2, 100))
+
+
+        input_surface = POLICE.render(input_text, True, BLEU)
+        screen.blit(input_surface, (LARGEUR // 2 - input_surface.get_width() // 2, 200))
+
+
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and input_text.strip():
+                    with open(chemin_fichier, "a") as f:
+                        f.write(input_text.strip().upper() + "\n")
+                    ajout_en_cours = False
+                elif event.key == pygame.K_BACKSPACE:
+                    input_text = input_text[:-1]
+                else:
+                    input_text += event.unicode
+
+
+        pygame.display.flip()
 
 
 
@@ -104,37 +165,23 @@ def dessiner_pendu(erreurs):
     if erreurs>9:
         pygame.draw.line(screen, NOIR, (175,350),(160,370), 3)# jambe gauche
 
-def dessiner_bouton(surface, x,y,largeur,hauteur, texte, couleur, vol_couleur, police):
-    souris_pos= pygame.mouse.get_pos()
-    souris_tap= pygame.mouse.get_pressed()
-    bouton_rect= pygame.Rect(x, y, largeur, hauteur)
-    voler=bouton_rect.collidepoint(souris_pos)
-
-    couleur_actuelle=vol_couleur if voler else couleur
-    pygame.draw.rect(surface, couleur_actuelle, bouton_rect, border_radius=10)
-
-    texte_surface=police.render(texte, True, BLANC)
-    texte_rect=texte_surface.get_rect(center=(x+largeur//2, y +hauteur//2))
-    surface.blit(texte_surface, texte_rect)
-
-    if voler and souris_tap[0]:
-        return True
-    return False
 
 def menu():
     global en_cours
 
     while en_cours:
         screen.fill(BLANC)
+        events=pygame.event.get()
 
         if dessiner_bouton(screen, 100, 200, 200, 100, "Lancer ", NOIR, BLEU, POLICE ):
             boucle_principale()
         
         elif dessiner_bouton(screen, 350, 200, 300, 100, "Ajouter des mots", NOIR, BLEU, POLICE):
-            print("pas encore")
+            ajouter_mot()
+            pygame.event.clear()
 
         
-        for event in pygame.event.get():
+        for event in events:
             if event.type==pygame.QUIT:
                 en_cours=False
 
@@ -144,11 +191,18 @@ def menu():
 
 
 def boucle_principale():
-    global en_cours
-    global erreurs
+    global en_cours, erreurs, mot_choisi
+    
+    erreurs=0
+
+    # Choix d'un mot aléatoire
+    mot_choisi = random.choice(mots).upper()
+    devine = ["_"] * len(mot_choisi)
+    lettres_devinees = set()
 
     while en_cours:
         screen.fill(BLANC)
+        events=pygame.event.get()
 
         
 
@@ -177,13 +231,13 @@ def boucle_principale():
 
         if dessiner_bouton(screen, LARGEUR/2, 400, 150, 100, "Quitter", NOIR, ROUGE, POLICE):
             end(False)
-            pygame.time.delay(5000)
-            en_cours=False
+            pygame.time.delay(2000)
+            return
 
 
 
 
-        for event in pygame.event.get():
+        for event in events:
             if event.type == pygame.QUIT:
                 en_cours = False
             if event.type == pygame.KEYDOWN:
@@ -203,8 +257,14 @@ def boucle_principale():
 
         if erreurs> erreurs_max:
             end(False)
+            pygame.time.delay(2000)
+            menu()
+            return
         elif "_" not in devine:
             end(True)
+            pygame.time.delay(2000)
+            menu()
+            return
 
         pygame.display.flip()
         horloge.tick(100)

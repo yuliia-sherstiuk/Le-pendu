@@ -2,6 +2,7 @@ import pygame
 import random
 pygame.init()
 
+#bongiorno
 window=pygame.display.set_mode((500,500))
 
 

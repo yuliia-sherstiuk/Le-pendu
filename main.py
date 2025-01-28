@@ -229,7 +229,7 @@ def boucle_principale():
         # Affichage du pendu
         dessiner_pendu(erreurs)
 
-        if dessiner_bouton(screen, LARGEUR/2, 400, 150, 100, "Quitter", NOIR, ROUGE, POLICE):
+        if dessiner_bouton(screen, 275, 450, 200, 75, "Quitter", NOIR, ROUGE, POLICE):
             end(False)
             pygame.time.delay(2000)
             return
